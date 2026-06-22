@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoreCad — Atendimento #685</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #12141a;
+    --surface2: #1a1d25;
+    --surface3: #20242e;
+    --border: #252836;
+    --border2: #2f3344;
+    --text: #e8eaf0;
+    --text2: #8b90a7;
+    --text3: #4a4f66;
+    --accent: #4f6ef7;
+    --accent-dim: rgba(79,110,247,0.10);
+    --green: #22c55e;
+    --green-dim: rgba(34,197,94,0.10);
+    --orange: #f97316;
+    --orange-dim: rgba(249,115,22,0.10);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.10);
+    --yellow: #eab308;
+    --yellow-dim: rgba(234,179,8,0.10);
+    --purple: #a855f7;
+    --purple-dim: rgba(168,85,247,0.10);
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 0 160px;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .header-brand {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .ticket-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .header-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    margin-bottom: 10px;
+  }
+  .header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+  .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
+  .badge.blue { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(234,179,8,0.2); }
+  .badge.red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+  .meta-sep { color: var(--text3); font-size: 11px; }
+
+  /* SLA BAR */
+  .sla-bar {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    margin: 12px 20px 0;
+  }
+  .sla-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .sla-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+  .sla-time { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+  .sla-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .sla-fill { height: 100%; border-radius: 2px; background: var(--orange); width: 45%; }
+
+  /* CONTENT */
+  .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* SECTION */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text3);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* RESPONSAVEL */
+  .responsavel-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+  }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; color: white;
+    background: linear-gradient(135deg, #4f6ef7, #7c3aed);
+  }
+  .avatar-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .avatar-role { font-size: 11px; color: var(--text3); }
+
+  /* HISTÓRICO */
+  .historico { display: flex; flex-direction: column; gap: 10px; }
+  .msg {
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    border-left: 3px solid;
+  }
+  .msg.original {
+    background: rgba(79,110,247,0.06);
+    border-left-color: var(--accent);
+    border: 1px solid rgba(79,110,247,0.15);
+    border-left: 3px solid var(--accent);
+  }
+  .msg.operador {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--text3);
+  }
+  .msg.cliente {
+    background: rgba(234,179,8,0.05);
+    border: 1px solid rgba(234,179,8,0.15);
+    border-left: 3px solid var(--yellow);
+  }
+  .msg-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .msg-from {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .msg-from.original { color: var(--accent); }
+  .msg-from.operador { color: var(--text2); }
+  .msg-from.cliente { color: var(--yellow); }
+  .msg-tag {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+  .msg-tag.original { background: var(--accent-dim); color: var(--accent); }
+  .msg-tag.operador { background: rgba(255,255,255,0.06); color: var(--text3); }
+  .msg-tag.cliente { background: var(--yellow-dim); color: var(--yellow); }
+  .msg-time { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+  .msg-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .msg-text strong { color: var(--text); }
+
+  .historico-mais {
+    text-align: center;
+    font-size: 12px;
+    color: var(--accent);
+    padding: 8px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* ANEXOS */
+  .anexos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .anexo-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .anexo-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+  /* ACTION BUTTONS */
+  .action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 20;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 9px 14px;
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-green { background: var(--green); color: #051a0d; flex: 1.5; }
+  .btn-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); flex: 1; }
+  .btn-blue { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); flex: 1; }
+  .btn-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); flex: 1; }
+
+  /* MODAL DE AÇÃO */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 50;
+    align-items: flex-end;
+    justify-content: center;
+    padding: 0;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius) var(--radius) 0 0;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border2);
+    border-radius: 2px;
+    margin: 0 auto -6px;
+  }
+  .modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+  .modal-desc { font-size: 12px; color: var(--text2); margin-top: -8px; }
+  .modal-field { display: flex; flex-direction: column; gap: 8px; }
+  .modal-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+  .modal-select {
+    width: 100%; padding: 11px 14px;
+    border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--text);
+    font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+  }
+  .modal-textarea {
+    width: 100%; padding: 11px 14px;
+    border-radius: var(--radius-sm); border: 1px solid var(--border2);
+    background: var(--surface2); color: var(--text);
+    font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
+    resize: none; line-height: 1.5;
+  }
+  .modal-textarea::placeholder { color: var(--text3); }
+  .modal-confirm-block {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    font-size: 12px; color: var(--text2); line-height: 1.5;
+  }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 11px 18px; border-radius: var(--radius-sm);
+    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
+    font-family: 'Inter', sans-serif; flex: 1;
+  }
+  .modal-btn-green { background: var(--green); color: #051a0d; }
+  .modal-btn-orange { background: var(--orange); color: #1a0800; }
+  .modal-btn-blue { background: var(--accent); color: white; }
+  .modal-btn-red { background: var(--red); color: white; }
+  .modal-btn-ghost {
+    background: var(--surface2); color: var(--text2);
+    border: 1px solid var(--border2); flex: 0 0 auto; padding: 11px 16px;
+  }
+
+  /* PERSON LIST */
+  .person-list { display: flex; flex-direction: column; gap: 6px; }
+  .person-option {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border2); background: var(--surface2);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .person-option:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .person-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .p-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; flex-shrink: 0; color: white;
+  }
+  .av-cr { background: linear-gradient(135deg, #4f6ef7, #7c3aed); }
+  .av-ml { background: linear-gradient(135deg, #22c55e, #16a34a); }
+  .av-wr { background: linear-gradient(135deg, #f97316, #ea580c); }
+  .av-is { background: linear-gradient(135deg, #ec4899, #db2777); }
+  .av-gc { background: linear-gradient(135deg, #a855f7, #7c3aed); }
+  .p-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .p-role { font-size: 11px; color: var(--text3); }
+  .p-check { margin-left: auto; color: var(--accent); font-size: 14px; opacity: 0; }
+  .person-option.selected .p-check { opacity: 1; }
+
+  /* REPLY AREA */
+  .reply-area {
+    position: fixed;
+    bottom: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px;
+    z-index: 19;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+  .reply-input-wrap {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    padding: 8px 12px;
+    transition: border-color 0.15s;
+  }
+  .reply-input-wrap:focus-within { border-color: var(--accent); }
+  .reply-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+  .reply-textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    resize: none;
+    line-height: 1.5;
+    max-height: 80px;
+    overflow-y: auto;
+  }
+  .reply-textarea::placeholder { color: var(--text3); }
+  .reply-send {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .reply-send:hover { background: #3d5ce5; }
+
+  /* SUCCESS TOAST */
+  .toast {
+    display: none;
+    position: fixed;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--green);
+    color: #051a0d;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 12px 20px;
+    border-radius: 30px;
+    z-index: 100;
+    white-space: nowrap;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .toast.show { display: block; animation: fadeInUp 0.3s ease; }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="header-brand">CoreCad · Atendimento</div>
+    <div class="ticket-id">#685</div>
+  </div>
+  <div class="header-title">RES: Validação de Cadastro / CNPJ: 46.548.574/0001-08 / Razão Social: COLUMBIA TRADING S.A</div>
+  <div class="header-meta">
+    <span class="badge purple"><span class="badge-dot"></span>Em Andamento</span>
+    <span class="meta-sep">·</span>
+    <span class="badge orange"><span class="badge-dot"></span>Alta</span>
+    <span class="meta-sep">·</span>
+    <span style="font-size:11px;color:var(--text2)">22/06/2026 · 10:47</span>
+  </div>
+</div>
+
+<div class="sla-bar">
+  <div class="sla-top">
+    <span class="sla-label">SLA</span>
+    <span class="sla-time">⏱ Prazo: 23/06/2026 · 10:47 — 22h restantes</span>
+  </div>
+  <div class="sla-track"><div class="sla-fill"></div></div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- RESPONSÁVEL -->
+  <div>
+    <div class="section-label">Responsável</div>
+    <div class="responsavel-block">
+      <div class="avatar">IS</div>
+      <div>
+        <div class="avatar-name">Isabela Santos</div>
+        <div class="avatar-role">Operadora · CoreCad</div>
+      </div>
+      <span class="badge blue" style="margin-left:auto">Atribuído</span>
+    </div>
+  </div>
+
+  <!-- REMETENTE -->
+  <div>
+    <div class="section-label">Remetente</div>
+    <div style="font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;">
+      ana.fernandes@craftmulti.com
+    </div>
+  </div>
+
+  <!-- HISTÓRICO -->
+  <div>
+    <div class="section-label">Histórico da conversa</div>
+    <div class="historico">
+
+      <div class="msg original">
+        <div class="msg-header">
+          <div class="msg-from original">
+            <span class="msg-tag original">SOLICITAÇÃO</span>
+            ana.fernandes@craftmulti.com
+          </div>
+          <span class="msg-time">22/06 · 10:47</span>
+        </div>
+        <div class="msg-text">
+          Olá, bom dia!<br><br>
+          Poderiam validar o cadastro de CNEE que já existe no CROSS para o CW para vinculação de novos embarques e negociações, pls?<br><br>
+          CNPJ: 46.548.574/0001-08<br>
+          Razão Social: COLUMBIA TRADING S.A<br><br>
+          Atenciosamente,<br>
+          <strong>Ana Caroline Fernandes</strong><br>
+          Corporate FCL Import Inside Sales · Ramal 6062
+        </div>
+      </div>
+
+      <div class="msg operador">
+        <div class="msg-header">
+          <div class="msg-from operador">
+            <span class="msg-tag operador">OPERADOR</span>
+            Isabela Santos
+          </div>
+          <span class="msg-time">22/06 · 11:15</span>
+        </div>
+        <div class="msg-text">
+          Bom dia, Ana! Recebemos a solicitação. Vamos verificar o cadastro no CargoWise e retornamos até o final do dia.
+        </div>
+      </div>
+
+      <div class="msg cliente">
+        <div class="msg-header">
+          <div class="msg-from cliente">
+            <span class="msg-tag cliente">CLIENTE</span>
+            ana.fernandes@craftmulti.com
+          </div>
+          <span class="msg-time">22/06 · 14:32</span>
+        </div>
+        <div class="msg-text">
+          Oi, ainda não recebemos retorno. Conseguem confirmar o prazo de conclusão? Temos um embarque previsto para amanhã.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ANEXOS -->
+  <div>
+    <div class="section-label">Anexos</div>
+    <div class="anexos">
+      <a class="anexo-btn">📎 ficha_cadastro_columbia.pdf</a>
+      <a class="anexo-btn">📎 documentos_empresa.zip</a>
+      <a class="anexo-btn">📧 Email original completo</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- REPLY AREA -->
+<div class="reply-area">
+  <div class="reply-input-wrap">
+    <div class="reply-label">Responder ao cliente</div>
+    <textarea class="reply-textarea" id="replyText" rows="2" placeholder="Digite sua resposta... (será enviada de corecad@e-craft.com)"></textarea>
+  </div>
+  <button class="reply-send" onclick="sendReply()" title="Enviar resposta">➤</button>
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar">
+  <button class="btn btn-green" onclick="openModal('iniciar')">▶ Iniciar</button>
+  <button class="btn btn-orange" onclick="openModal('espera')">⏸ Espera</button>
+  <button class="btn btn-blue" onclick="openModal('redirecionar')">↩ Redirecionar</button>
+  <button class="btn btn-red" onclick="openModal('concluir')">✅ Concluir</button>
+</div>
+
+<!-- MODAL: INICIAR -->
+<div class="modal-overlay" id="modal-iniciar" onclick="closeModal('iniciar', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">▶ Iniciar Atendimento</div>
+    <div class="modal-desc">Confirme para registrar o início e atualizar o status para Em Andamento.</div>
+    <div class="modal-confirm-block">
+      O horário de início será registrado automaticamente e o card no Teams será atualizado.
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-green" onclick="confirm('iniciar', 'Atendimento iniciado — Em Andamento')">▶ Confirmar Início</button>
+      <button class="modal-btn-ghost modal-btn" onclick="closeModal('iniciar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ESPERA -->
+<div class="modal-overlay" id="modal-espera" onclick="closeModal('espera', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">⏸ Colocar em Espera</div>
+    <div class="modal-desc">Registre o motivo da pausa no atendimento.</div>
+    <div class="modal-field">
+      <div class="modal-field-label">Motivo</div>
+      <select class="modal-select">
+        <option value="">Selecione um motivo...</option>
+        <option>Aguardando documentação do cliente</option>
+        <option>Aguardando aprovação interna</option>
+        <option>Aguardando retorno do agente</option>
+        <option>Informação pendente no CargoWise</option>
+        <option>Outro</option>
+      </select>
+    </div>
+    <div class="modal-field">
+      <div class="modal-field-label">Observação (opcional)</div>
+      <textarea class="modal-textarea" rows="2" placeholder="Detalhes adicionais..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-orange" onclick="confirm('espera', 'Chamado em Espera')">⏸ Confirmar Espera</button>
+      <button class="modal-btn-ghost modal-btn" onclick="closeModal('espera')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: REDIRECIONAR -->
+<div class="modal-overlay" id="modal-redirecionar" onclick="closeModal('redirecionar', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">↩ Redirecionar Chamado</div>
+    <div class="modal-desc">Escolha o novo responsável pelo atendimento.</div>
+    <div class="modal-field">
+      <div class="modal-field-label">Novo responsável</div>
+      <div class="person-list">
+        <div class="person-option" onclick="selectPerson(this)">
+          <div class="p-avatar av-cr">CR</div>
+          <div><div class="p-name">Cauê Ribeiro</div><div class="p-role">Tech Lead</div></div>
+          <span class="p-check">✓</span>
+        </div>
+        <div class="person-option" onclick="selectPerson(this)">
+          <div class="p-avatar av-ml">ML</div>
+          <div><div class="p-name">Matheus Lopes</div><div class="p-role">Operador</div></div>
+          <span class="p-check">✓</span>
+        </div>
+        <div class="person-option" onclick="selectPerson(this)">
+          <div class="p-avatar av-wr">WR</div>
+          <div><div class="p-name">Walmir Ramos</div><div class="p-role">Operador</div></div>
+          <span class="p-check">✓</span>
+        </div>
+        <div class="person-option" onclick="selectPerson(this)">
+          <div class="p-avatar av-is">IS</div>
+          <div><div class="p-name">Isabela Santos</div><div class="p-role">Operadora</div></div>
+          <span class="p-check">✓</span>
+        </div>
+        <div class="person-option" onclick="selectPerson(this)">
+          <div class="p-avatar av-gc">GC</div>
+          <div><div class="p-name">Giovana Costa</div><div class="p-role">Operadora</div></div>
+          <span class="p-check">✓</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-field">
+      <div class="modal-field-label">Motivo (opcional)</div>
+      <textarea class="modal-textarea" rows="2" placeholder="Ex: fora do escopo, ausência..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-blue" onclick="confirm('redirecionar', 'Chamado redirecionado')">↩ Confirmar Redirecionamento</button>
+      <button class="modal-btn-ghost modal-btn" onclick="closeModal('redirecionar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONCLUIR -->
+<div class="modal-overlay" id="modal-concluir" onclick="closeModal('concluir', event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✅ Concluir Ticket</div>
+    <div class="modal-desc">Registre a conclusão do atendimento.</div>
+    <div class="modal-confirm-block">
+      ⚠️ Esta ação encerra o chamado. Se o cliente responder após a conclusão, o ticket será reaberto automaticamente.
+    </div>
+    <div class="modal-field">
+      <div class="modal-field-label">Observação de conclusão (opcional)</div>
+      <textarea class="modal-textarea" rows="3" placeholder="Descreva o que foi feito, decisões tomadas, próximos passos..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-red" onclick="confirm('concluir', '✅ Ticket concluído com sucesso')">✅ Confirmar Conclusão</button>
+      <button class="modal-btn-ghost modal-btn" onclick="closeModal('concluir')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function openModal(name) {
+    document.getElementById('modal-' + name).classList.add('open');
+  }
+  function closeModal(name, e) {
+    if (!e || e.target === document.getElementById('modal-' + name)) {
+      document.getElementById('modal-' + name).classList.remove('open');
+    }
+  }
+  function confirm(name, msg) {
+    document.getElementById('modal-' + name).classList.remove('open');
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+  function selectPerson(el) {
+    document.querySelectorAll('.person-option').forEach(p => p.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function sendReply() {
+    const text = document.getElementById('replyText').value.trim();
+    if (!text) return;
+
+    // Adiciona a resposta no histórico visualmente
+    const historico = document.querySelector('.historico');
+    const now = new Date();
+    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const msg = document.createElement('div');
+    msg.className = 'msg operador';
+    msg.innerHTML = `
+      <div class="msg-header">
+        <div class="msg-from operador">
+          <span class="msg-tag operador">OPERADOR</span>
+          Isabela Santos
+        </div>
+        <span class="msg-time">22/06 · ${time}</span>
+      </div>
+      <div class="msg-text">${text.replace(/\n/g, '<br>')}</div>
+    `;
+    historico.appendChild(msg);
+    msg.scrollIntoView({ behavior: 'smooth' });
+
+    // Limpa o campo
+    document.getElementById('replyText').value = '';
+
+    // Toast de confirmação
+    const toast = document.getElementById('toast');
+    toast.textContent = '✅ Resposta enviada ao cliente';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+  }
+
+  // Enviar com Ctrl+Enter
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const active = document.activeElement;
+      if (active && active.id === 'replyText') sendReply();
+    }
+  });
+</script>
+</body>
+</html>
