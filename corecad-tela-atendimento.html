@@ -460,6 +460,14 @@
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;">
+  <div style="text-align:center;padding:40px">
+    <div style="font-size:32px;margin-bottom:16px">⏳</div>
+    <div style="font-size:14px;font-weight:600;color:var(--text)">Carregando chamado...</div>
+  </div>
+</div>
+
 <!-- HEADER -->
 <div class="header">
   <div class="header-top">
@@ -503,7 +511,7 @@
   <!-- REMETENTE -->
   <div>
     <div class="section-label">Remetente</div>
-    <div style="font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;">
+    <div id="remetente-value" style="font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;">
       ana.fernandes@craftmulti.com
     </div>
   </div>
@@ -696,6 +704,141 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // ===== MICROSOFT GRAPH AUTH + SHAREPOINT =====
+  const CLIENT_ID = '47e44f24-4e8d-44c2-8dad-26f8116406c7';
+  const TENANT_ID = '54ca17b8-f0f1-434f-8cfb-953d363b06e0';
+  const SITE_ID = 'craftms.sharepoint.com,CoreCad-Operaes';
+  const LIST_ID = '9b3f8a2e-3faf-4d57-919b-332c2c605774';
+  const REDIRECT_URI = 'https://cauecgr-ship-it.github.io/CoreCad-app/corecad-tela-atendimento.html';
+  const SCOPES = 'https://graph.microsoft.com/Sites.Read.All https://graph.microsoft.com/User.Read';
+
+  // Pegar ticketId da URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const ticketId = urlParams.get('ticketId');
+
+  // Pegar token do hash (após redirect do login)
+  function getTokenFromHash() {
+    const hash = window.location.hash.substring(1);
+    const params = new URLSearchParams(hash);
+    return params.get('access_token');
+  }
+
+  // Iniciar login Microsoft
+  function login() {
+    const authUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?` +
+      `client_id=${CLIENT_ID}` +
+      `&response_type=token` +
+      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&scope=${encodeURIComponent(SCOPES)}` +
+      `&state=ticketId=${ticketId}` +
+      `&response_mode=fragment`;
+    window.location.href = authUrl;
+  }
+
+  // Buscar dados do ticket no SharePoint via Graph
+  async function loadTicketData(token, resolvedTicketId) {
+    try {
+      const itemUrl = `https://graph.microsoft.com/v1.0/sites/craftms.sharepoint.com:/sites/CoreCad-Operaes:/lists/${LIST_ID}/items/${resolvedTicketId}?expand=fields`;
+
+      const res = await fetch(itemUrl, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!res.ok) throw new Error('Erro ao buscar ticket');
+      const data = await res.json();
+      const f = data.fields;
+
+      // Atualizar título
+      document.title = `CoreCad — Atendimento #${resolvedTicketId}`;
+
+      // Atualizar header
+      document.querySelector('.header-title').textContent = f.Title || '—';
+      document.querySelector('.ticket-id').textContent = `#${resolvedTicketId}`;
+
+      // Status badge
+      const statusEl = document.querySelector('.badge.purple');
+      if (statusEl) statusEl.innerHTML = `<span class="badge-dot"></span>${f.Status || 'Pendente'}`;
+
+      // Urgência badge
+      const urgEl = document.querySelector('.badge.orange');
+      if (urgEl) urgEl.innerHTML = `<span class="badge-dot"></span>${f.Urgência || f.Urg_x00ea_ncia || 'Normal'}`;
+
+      // Data de recebimento
+      const dataEl = document.querySelector('.header-meta span:last-child');
+      if (dataEl && f.DatadeRecebimento) {
+        const d = new Date(f.DatadeRecebimento);
+        dataEl.textContent = d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+      }
+
+      // Responsável
+      const respNome = f['Responsável'] || f.Respons_x00e1_vel || '—';
+      document.querySelector('.avatar-name').textContent = respNome;
+
+      // Remetente
+      const remEl = document.getElementById('remetente-value');
+      if (remEl) remEl.textContent = f.Remetente || '—';
+
+      // Corpo (solicitação original)
+      const corpoEl = document.querySelector('.msg.original .msg-text');
+      if (corpoEl && f.Corpo) corpoEl.innerHTML = f.Corpo.replace(/\n/g, '<br>');
+
+      // Remover loading
+      document.getElementById('loading-overlay')?.remove();
+
+    } catch(err) {
+      console.error('Erro ao carregar ticket:', err);
+      document.getElementById('loading-overlay').innerHTML = `
+        <div style="text-align:center;padding:40px;color:var(--text2)">
+          <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">Erro ao carregar ticket</div>
+          <div style="font-size:12px;margin-top:8px">${err.message}</div>
+          <button onclick="login()" style="margin-top:16px;padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;font-size:13px;font-weight:600">Tentar novamente</button>
+        </div>
+      `;
+    }
+  }
+
+  // Inicialização
+  window.addEventListener('load', function() {
+    // Recuperar ticketId — pode vir da URL ou do sessionStorage (após redirect de login)
+    const resolvedTicketId = ticketId || sessionStorage.getItem('pending_ticketId');
+
+    if (!resolvedTicketId) {
+      document.getElementById('loading-overlay').innerHTML = `
+        <div style="text-align:center;padding:40px;color:var(--text2)">
+          <div style="font-size:32px;margin-bottom:12px">🔗</div>
+          <div style="font-size:14px;font-weight:600;color:var(--text)">ID do ticket não encontrado</div>
+          <div style="font-size:12px;margin-top:8px">Acesse esta página pelo botão "Abrir Chamado" no Teams</div>
+        </div>
+      `;
+      return;
+    }
+
+    // Garantir que o ticketId está salvo para após o redirect
+    sessionStorage.setItem('pending_ticketId', resolvedTicketId);
+
+    const token = getTokenFromHash();
+    if (token) {
+      window.location.hash = '';
+      sessionStorage.setItem('graph_token', token);
+      loadTicketData(token, resolvedTicketId);
+    } else {
+      const savedToken = sessionStorage.getItem('graph_token');
+      if (savedToken) {
+        loadTicketData(savedToken, resolvedTicketId);
+      } else {
+        document.getElementById('loading-overlay').innerHTML = `
+          <div style="text-align:center;padding:40px">
+            <div style="font-size:40px;margin-bottom:16px">🔐</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso ao CoreCad</div>
+            <div style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5">Entre com sua conta da Craft para<br>visualizar os dados do chamado</div>
+            <button onclick="login()" style="padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-size:14px;font-weight:600">Entrar com conta Craft</button>
+          </div>
+        `;
+      }
+    }
+  });
+
   function openModal(name) {
     document.getElementById('modal-' + name).classList.add('open');
   }
