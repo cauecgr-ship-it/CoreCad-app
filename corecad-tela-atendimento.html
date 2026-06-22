@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CoreCad — Atendimento #685</title>
+<title>CoreCad — Atendimento</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -39,57 +39,68 @@
     font-family: 'Inter', sans-serif;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 0 80px;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  /* HEADER */
-  .header {
+  /* ===== LAYOUT DUAS COLUNAS ===== */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    grid-template-rows: 56px 1fr;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* TOPBAR */
+  .topbar {
+    grid-column: 1 / -1;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
-    padding: 16px 20px;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  .header-top {
+    padding: 0 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    gap: 16px;
   }
-  .header-brand {
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+  .topbar-brand {
     font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     color: var(--accent);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
-  .ticket-id {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px;
+  .topbar-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--border2);
+    flex-shrink: 0;
+  }
+  .topbar-title {
+    font-size: 13px;
     font-weight: 600;
-    color: var(--text3);
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    padding: 4px 10px;
-    border-radius: 20px;
-  }
-  .header-title {
-    font-size: 14px;
-    font-weight: 700;
     color: var(--text);
-    line-height: 1.3;
-    margin-bottom: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
-  .header-meta {
+  .topbar-badges {
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
+    flex-shrink: 0;
   }
+
+  /* BADGES */
   .badge {
     display: inline-flex;
     align-items: center;
@@ -100,37 +111,37 @@
     font-weight: 600;
   }
   .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .badge.green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,197,94,0.2); }
+  .badge.green  { background: var(--green-dim);  color: var(--green);  border: 1px solid rgba(34,197,94,0.2);  }
   .badge.orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
   .badge.purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(168,85,247,0.2); }
-  .badge.blue { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); }
-  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(234,179,8,0.2); }
-  .badge.red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-  .meta-sep { color: var(--text3); font-size: 11px; }
+  .badge.blue   { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); }
+  .badge.yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(234,179,8,0.2);  }
+  .badge.red    { background: var(--red-dim);    color: var(--red);    border: 1px solid rgba(239,68,68,0.2);  }
+  .badge.gray   { background: rgba(255,255,255,0.05); color: var(--text2); border: 1px solid var(--border2); }
 
-  /* SLA BAR */
-  .sla-bar {
+  .ticket-id-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text3);
     background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 10px 14px;
-    margin: 12px 20px 0;
+    border: 1px solid var(--border2);
+    padding: 4px 10px;
+    border-radius: 20px;
   }
-  .sla-top {
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 20px 16px;
+    overflow-y: auto;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 6px;
+    flex-direction: column;
+    gap: 16px;
   }
-  .sla-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
-  .sla-time { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text2); }
-  .sla-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-  .sla-fill { height: 100%; border-radius: 2px; background: var(--orange); width: 45%; }
 
-  /* CONTENT */
-  .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
-
-  /* SECTION */
+  /* SECTION LABEL */
   .section-label {
     font-size: 10px;
     font-weight: 700;
@@ -144,27 +155,85 @@
   }
   .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-  /* RESPONSAVEL */
-  .responsavel-block {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  /* INFO BLOCK */
+  .info-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  /* SLA */
+  .sla-block {
     background: var(--surface2);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 10px 12px;
   }
+  .sla-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .sla-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
+  .sla-time  { font-size: 11px; font-family: 'JetBrains Mono', monospace; color: var(--text2); }
+  .sla-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .sla-fill  { height: 100%; border-radius: 2px; background: var(--orange); width: 45%; }
+
+  /* AVATAR / RESPONSÁVEL */
+  .responsavel-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .avatar-row { display: flex; align-items: center; gap: 10px; }
   .avatar {
     width: 32px; height: 32px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; flex-shrink: 0; color: white;
+    font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
     background: linear-gradient(135deg, #4f6ef7, #7c3aed);
   }
   .avatar-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .avatar-role { font-size: 11px; color: var(--text3); }
 
-  /* HISTÓRICO */
-  .historico { display: flex; flex-direction: column; gap: 10px; }
+  /* ANEXOS */
+  .anexos { display: flex; flex-wrap: wrap; gap: 6px; }
+  .anexo-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 6px 10px;
+    font-size: 11px; color: var(--text2); cursor: pointer; text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .anexo-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ===== MAIN AREA ===== */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .historico-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* MENSAGENS */
   .msg {
     border-radius: var(--radius-sm);
     padding: 12px 14px;
@@ -172,7 +241,6 @@
   }
   .msg.original {
     background: rgba(79,110,247,0.06);
-    border-left-color: var(--accent);
     border: 1px solid rgba(79,110,247,0.15);
     border-left: 3px solid var(--accent);
   }
@@ -187,406 +255,286 @@
     border-left: 3px solid var(--yellow);
   }
   .msg-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 6px;
+    display: flex; align-items: center;
+    justify-content: space-between; margin-bottom: 6px;
   }
-  .msg-from {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 600;
-  }
+  .msg-from { display: flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; }
   .msg-from.original { color: var(--accent); }
   .msg-from.operador { color: var(--text2); }
-  .msg-from.cliente { color: var(--yellow); }
+  .msg-from.cliente  { color: var(--yellow); }
   .msg-tag {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 4px;
-    letter-spacing: 0.04em;
+    font-size: 9px; font-weight: 700; padding: 1px 6px;
+    border-radius: 4px; letter-spacing: 0.04em;
   }
   .msg-tag.original { background: var(--accent-dim); color: var(--accent); }
   .msg-tag.operador { background: rgba(255,255,255,0.06); color: var(--text3); }
-  .msg-tag.cliente { background: var(--yellow-dim); color: var(--yellow); }
+  .msg-tag.cliente  { background: var(--yellow-dim); color: var(--yellow); }
   .msg-time { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
   .msg-text { font-size: 12px; color: var(--text2); line-height: 1.6; }
-  .msg-text strong { color: var(--text); }
 
-  .historico-mais {
-    text-align: center;
-    font-size: 12px;
-    color: var(--accent);
-    padding: 8px;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-
-  /* ANEXOS */
-  .anexos { display: flex; flex-wrap: wrap; gap: 8px; }
-  .anexo-btn {
-    display: inline-flex;
+  /* ACTION BAR */
+  .action-bar {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    gap: 8px;
     align-items: center;
-    gap: 6px;
+  }
+  .action-bar-spacer { flex: 1; }
+
+  /* BOTÕES */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 5px; padding: 9px 16px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; cursor: pointer; border: none;
+    font-family: 'Inter', sans-serif; white-space: nowrap; transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-green  { background: var(--green); color: #051a0d; }
+  .btn-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); }
+  .btn-blue   { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); }
+  .btn-red    { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
+
+  /* CAMPO DE RESPOSTA (oculto até clicar Iniciar) */
+  .reply-area {
+    display: none;
+    padding: 12px 20px 0;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .reply-area.visible { display: block; }
+  .reply-textarea {
+    width: 100%;
     background: var(--surface2);
     border: 1px solid var(--border2);
     border-radius: var(--radius-sm);
-    padding: 7px 12px;
-    font-size: 12px;
-    color: var(--text2);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.15s;
-  }
-  .anexo-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-
-  /* ACTION BUTTONS */
-  .action-bar {
-    position: fixed;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 600px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 12px 20px;
-    display: flex;
-    gap: 8px;
-    z-index: 20;
-  }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    padding: 9px 14px;
-    border-radius: var(--radius-sm);
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
+    color: var(--text);
     font-family: 'Inter', sans-serif;
-    transition: all 0.15s;
-    white-space: nowrap;
+    font-size: 13px;
+    padding: 10px 12px;
+    resize: none;
+    outline: none;
+    line-height: 1.5;
   }
-  .btn-green { background: var(--green); color: #051a0d; flex: 1.5; }
-  .btn-orange { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.2); flex: 1; }
-  .btn-blue { background: var(--accent-dim); color: var(--accent); border: 1px solid rgba(79,110,247,0.2); flex: 1; }
-  .btn-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(239,68,68,0.2); flex: 1; }
+  .reply-textarea:focus { border-color: var(--accent); }
+  .reply-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0 12px;
+  }
+  .reply-hint { font-size: 10px; color: var(--text3); }
+  .btn-send {
+    background: var(--accent); color: white;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; border: none;
+    font-family: 'Inter', sans-serif; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-send:hover { opacity: 0.85; }
 
-  /* MODAL DE AÇÃO */
+  /* MODAIS */
   .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 50;
-    align-items: flex-end;
-    justify-content: center;
-    padding: 0;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6); z-index: 100;
+    align-items: flex-end; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius) var(--radius) 0 0;
-    width: 100%;
-    max-width: 600px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    animation: slideUp 0.2s ease;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0; padding: 20px 24px 32px;
+    width: 100%; max-width: 480px;
   }
-  @keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal-handle {
-    width: 36px; height: 4px;
-    background: var(--border2);
-    border-radius: 2px;
-    margin: 0 auto -6px;
+  .modal-handle { width: 40px; height: 4px; background: var(--border2); border-radius: 2px; margin: 0 auto 20px; }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+  .modal-desc  { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.5; }
+  .modal-field { margin-bottom: 14px; }
+  .modal-field-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .modal-select, .modal-textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); color: var(--text); font-family: 'Inter', sans-serif;
+    font-size: 13px; padding: 10px 12px; outline: none;
   }
-  .modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
-  .modal-desc { font-size: 12px; color: var(--text2); margin-top: -8px; }
-  .modal-field { display: flex; flex-direction: column; gap: 8px; }
-  .modal-field-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text3); }
-  .modal-select {
-    width: 100%; padding: 11px 14px;
-    border-radius: var(--radius-sm); border: 1px solid var(--border2);
-    background: var(--surface2); color: var(--text);
-    font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
-  }
-  .modal-textarea {
-    width: 100%; padding: 11px 14px;
-    border-radius: var(--radius-sm); border: 1px solid var(--border2);
-    background: var(--surface2); color: var(--text);
-    font-size: 13px; font-family: 'Inter', sans-serif; outline: none;
-    resize: none; line-height: 1.5;
-  }
-  .modal-textarea::placeholder { color: var(--text3); }
+  .modal-select:focus, .modal-textarea:focus { border-color: var(--accent); }
+  .modal-textarea { resize: none; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; }
+  .modal-btn { flex: 1; padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: 'Inter', sans-serif; }
+  .modal-btn-ghost { background: var(--surface2); color: var(--text2); border: 1px solid var(--border2); }
+  .modal-btn-green  { background: var(--green); color: #051a0d; }
+  .modal-btn-orange { background: var(--orange); color: white; }
+  .modal-btn-blue   { background: var(--accent); color: white; }
+  .modal-btn-red    { background: var(--red); color: white; }
   .modal-confirm-block {
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: var(--radius-sm); padding: 12px 14px;
-    font-size: 12px; color: var(--text2); line-height: 1.5;
+    background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);
+    border-radius: var(--radius-sm); padding: 12px; font-size: 12px;
+    color: var(--text2); line-height: 1.6; margin-bottom: 14px;
   }
-  .modal-actions { display: flex; gap: 10px; }
-  .modal-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    padding: 11px 18px; border-radius: var(--radius-sm);
-    font-size: 13px; font-weight: 600; cursor: pointer; border: none;
-    font-family: 'Inter', sans-serif; flex: 1;
-  }
-  .modal-btn-green { background: var(--green); color: #051a0d; }
-  .modal-btn-orange { background: var(--orange); color: #1a0800; }
-  .modal-btn-blue { background: var(--accent); color: white; }
-  .modal-btn-red { background: var(--red); color: white; }
-  .modal-btn-ghost {
-    background: var(--surface2); color: var(--text2);
-    border: 1px solid var(--border2); flex: 0 0 auto; padding: 11px 16px;
-  }
-
-  /* PERSON LIST */
   .person-list { display: flex; flex-direction: column; gap: 6px; }
   .person-option {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border2); background: var(--surface2);
-    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); cursor: pointer; transition: border-color 0.15s;
   }
-  .person-option:hover { border-color: var(--accent); background: var(--accent-dim); }
-  .person-option.selected { border-color: var(--accent); background: var(--accent-dim); }
+  .person-option:hover, .person-option.selected { border-color: var(--accent); }
+  .person-option.selected { background: var(--accent-dim); }
   .p-avatar {
     width: 30px; height: 30px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700; flex-shrink: 0; color: white;
+    font-size: 10px; font-weight: 700; color: white; flex-shrink: 0;
   }
-  .av-cr { background: linear-gradient(135deg, #4f6ef7, #7c3aed); }
-  .av-ml { background: linear-gradient(135deg, #22c55e, #16a34a); }
-  .av-wr { background: linear-gradient(135deg, #f97316, #ea580c); }
-  .av-is { background: linear-gradient(135deg, #ec4899, #db2777); }
-  .av-gc { background: linear-gradient(135deg, #a855f7, #7c3aed); }
-  .p-name { font-size: 13px; font-weight: 500; color: var(--text); }
+  .av-cr { background: linear-gradient(135deg,#4f6ef7,#7c3aed); }
+  .av-ml { background: linear-gradient(135deg,#06b6d4,#0891b2); }
+  .av-wr { background: linear-gradient(135deg,#f97316,#ea580c); }
+  .av-is { background: linear-gradient(135deg,#ec4899,#db2777); }
+  .av-gc { background: linear-gradient(135deg,#22c55e,#16a34a); }
+  .p-name { font-size: 13px; font-weight: 600; color: var(--text); }
   .p-role { font-size: 11px; color: var(--text3); }
-  .p-check { margin-left: auto; color: var(--accent); font-size: 14px; opacity: 0; }
-  .person-option.selected .p-check { opacity: 1; }
+  .p-check { margin-left: auto; color: var(--accent); font-weight: 700; display: none; }
+  .person-option.selected .p-check { display: block; }
 
-  /* REPLY AREA */
-  .reply-area {
-    position: fixed;
-    bottom: 56px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 100%;
-    max-width: 600px;
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    padding: 10px 16px;
-    z-index: 19;
-    display: flex;
-    gap: 8px;
-    align-items: flex-end;
-  }
-  .reply-input-wrap {
-    flex: 1;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: 10px;
-    padding: 8px 12px;
-    transition: border-color 0.15s;
-  }
-  .reply-input-wrap:focus-within { border-color: var(--accent); }
-  .reply-label {
-    font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text3);
-    margin-bottom: 4px;
-  }
-  .reply-textarea {
-    width: 100%;
-    background: transparent;
-    border: none;
-    outline: none;
-    color: var(--text);
-    font-size: 13px;
-    font-family: 'Inter', sans-serif;
-    resize: none;
-    line-height: 1.5;
-    max-height: 80px;
-    overflow-y: auto;
-  }
-  .reply-textarea::placeholder { color: var(--text3); }
-  .reply-send {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    background: var(--accent);
-    border: none;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-  .reply-send:hover { background: #3d5ce5; }
-
-  /* SUCCESS TOAST */
+  /* TOAST */
   .toast {
-    display: none;
-    position: fixed;
-    bottom: 90px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--green);
-    color: #051a0d;
-    font-size: 13px;
-    font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 30px;
-    z-index: 100;
-    white-space: nowrap;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+    background: var(--surface3); border: 1px solid var(--border2);
+    border-radius: 20px; padding: 10px 20px; font-size: 13px; font-weight: 500;
+    color: var(--text); opacity: 0; transition: opacity 0.2s; z-index: 200;
+    white-space: nowrap; pointer-events: none;
   }
-  .toast.show { display: block; animation: fadeInUp 0.3s ease; }
-  @keyframes fadeInUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+  .toast.show { opacity: 1; }
+
+  /* LOADING OVERLAY */
+  #loading-overlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; align-items: center; justify-content: center; z-index: 300;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 </style>
 </head>
 <body>
 
 <!-- LOADING OVERLAY -->
-<div id="loading-overlay" style="position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;align-items:center;justify-content:center;">
-  <div style="text-align:center;padding:40px">
-    <div style="font-size:32px;margin-bottom:16px">⏳</div>
-    <div style="font-size:14px;font-weight:600;color:var(--text)">Carregando chamado...</div>
+<div id="loading-overlay">
+  <div style="text-align:center;color:var(--text2)">
+    <div style="font-size:28px;margin-bottom:12px">⏳</div>
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Carregando chamado...</div>
   </div>
 </div>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-top">
-    <div class="header-brand">CoreCad · Atendimento</div>
-    <div class="ticket-id">#685</div>
-  </div>
-  <div class="header-title">RES: Validação de Cadastro / CNPJ: 46.548.574/0001-08 / Razão Social: COLUMBIA TRADING S.A</div>
-  <div class="header-meta">
-    <span class="badge purple"><span class="badge-dot"></span>Em Andamento</span>
-    <span class="meta-sep">·</span>
-    <span class="badge orange"><span class="badge-dot"></span>Alta</span>
-    <span class="meta-sep">·</span>
-    <span style="font-size:11px;color:var(--text2)">22/06/2026 · 10:47</span>
-  </div>
-</div>
+<!-- LAYOUT PRINCIPAL -->
+<div class="layout">
 
-<div class="sla-bar">
-  <div class="sla-top">
-    <span class="sla-label">SLA</span>
-    <span class="sla-time">⏱ Prazo: 23/06/2026 · 10:47 — 22h restantes</span>
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-brand">CoreCad</span>
+      <div class="topbar-sep"></div>
+      <span class="topbar-title" id="topbar-title">—</span>
+    </div>
+    <div class="topbar-badges">
+      <span class="badge purple" id="badge-status"><span class="badge-dot"></span>Carregando</span>
+      <span class="badge orange" id="badge-urgencia"><span class="badge-dot"></span>—</span>
+      <span class="ticket-id-badge" id="ticket-id-badge">#—</span>
+    </div>
   </div>
-  <div class="sla-track"><div class="sla-fill"></div></div>
-</div>
 
-<!-- CONTENT -->
-<div class="content">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
 
-  <!-- RESPONSÁVEL -->
-  <div>
-    <div class="section-label">Responsável</div>
-    <div class="responsavel-block">
-      <div class="avatar">IS</div>
-      <div>
-        <div class="avatar-name">Isabela Santos</div>
-        <div class="avatar-role">Operadora · CoreCad</div>
+    <!-- SLA -->
+    <div>
+      <div class="section-label">SLA</div>
+      <div class="sla-block">
+        <div class="sla-top">
+          <span class="sla-label">Prazo</span>
+          <span class="sla-time" id="sla-time">—</span>
+        </div>
+        <div class="sla-track"><div class="sla-fill" id="sla-fill"></div></div>
       </div>
-      <span class="badge blue" style="margin-left:auto">Atribuído</span>
     </div>
+
+    <!-- RESPONSÁVEL -->
+    <div>
+      <div class="section-label">Responsável</div>
+      <div class="responsavel-block">
+        <div class="avatar-row">
+          <div class="avatar" id="avatar-initials">—</div>
+          <div>
+            <div class="avatar-name" id="resp-nome">—</div>
+            <div class="avatar-role">Operador · CoreCad</div>
+          </div>
+        </div>
+        <span class="badge gray" id="badge-status-sidebar"><span class="badge-dot"></span>—</span>
+      </div>
+    </div>
+
+    <!-- REMETENTE -->
+    <div>
+      <div class="section-label">Remetente</div>
+      <div class="info-block" id="remetente-value">—</div>
+    </div>
+
+    <!-- DATA -->
+    <div>
+      <div class="section-label">Recebido em</div>
+      <div class="info-block" id="data-recebimento">—</div>
+    </div>
+
+    <!-- ANEXOS -->
+    <div>
+      <div class="section-label">Anexos</div>
+      <div class="anexos" id="anexos-area">
+        <span style="font-size:12px;color:var(--text3)">Nenhum anexo</span>
+      </div>
+    </div>
+
   </div>
 
-  <!-- REMETENTE -->
-  <div>
-    <div class="section-label">Remetente</div>
-    <div id="remetente-value" style="font-size:13px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;">
-      ana.fernandes@craftmulti.com
-    </div>
-  </div>
+  <!-- MAIN -->
+  <div class="main">
 
-  <!-- HISTÓRICO -->
-  <div>
-    <div class="section-label">Histórico da conversa</div>
-    <div class="historico">
+    <!-- HISTÓRICO -->
+    <div class="historico-area" id="historico-area">
+      <div class="section-label" style="margin-bottom:4px">Histórico da conversa</div>
 
+      <!-- Solicitação original -->
       <div class="msg original">
         <div class="msg-header">
           <div class="msg-from original">
             <span class="msg-tag original">SOLICITAÇÃO</span>
-            ana.fernandes@craftmulti.com
+            <span id="msg-from-original">—</span>
           </div>
-          <span class="msg-time">22/06 · 10:47</span>
+          <span class="msg-time" id="msg-time-original">—</span>
         </div>
-        <div class="msg-text">
-          Olá, bom dia!<br><br>
-          Poderiam validar o cadastro de CNEE que já existe no CROSS para o CW para vinculação de novos embarques e negociações, pls?<br><br>
-          CNPJ: 46.548.574/0001-08<br>
-          Razão Social: COLUMBIA TRADING S.A<br><br>
-          Atenciosamente,<br>
-          <strong>Ana Caroline Fernandes</strong><br>
-          Corporate FCL Import Inside Sales · Ramal 6062
-        </div>
-      </div>
-
-      <div class="msg operador">
-        <div class="msg-header">
-          <div class="msg-from operador">
-            <span class="msg-tag operador">OPERADOR</span>
-            Isabela Santos
-          </div>
-          <span class="msg-time">22/06 · 11:15</span>
-        </div>
-        <div class="msg-text">
-          Bom dia, Ana! Recebemos a solicitação. Vamos verificar o cadastro no CargoWise e retornamos até o final do dia.
-        </div>
-      </div>
-
-      <div class="msg cliente">
-        <div class="msg-header">
-          <div class="msg-from cliente">
-            <span class="msg-tag cliente">CLIENTE</span>
-            ana.fernandes@craftmulti.com
-          </div>
-          <span class="msg-time">22/06 · 14:32</span>
-        </div>
-        <div class="msg-text">
-          Oi, ainda não recebemos retorno. Conseguem confirmar o prazo de conclusão? Temos um embarque previsto para amanhã.
-        </div>
+        <div class="msg-text" id="msg-body-original">Carregando...</div>
       </div>
 
     </div>
-  </div>
 
-  <!-- ANEXOS -->
-  <div>
-    <div class="section-label">Anexos</div>
-    <div class="anexos">
-      <a class="anexo-btn">📎 ficha_cadastro_columbia.pdf</a>
-      <a class="anexo-btn">📎 documentos_empresa.zip</a>
-      <a class="anexo-btn">📧 Email original completo</a>
+    <!-- CAMPO DE RESPOSTA (aparece após Iniciar) -->
+    <div class="reply-area" id="reply-area">
+      <textarea class="reply-textarea" id="replyText" rows="3" placeholder="Escreva sua resposta ao cliente..."></textarea>
+      <div class="reply-footer">
+        <span class="reply-hint">Ctrl+Enter para enviar</span>
+        <button class="btn-send" onclick="sendReply()">✉ Enviar resposta</button>
+      </div>
     </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <button class="btn btn-green"   onclick="openModal('iniciar')">▶ Iniciar</button>
+      <button class="btn btn-orange"  onclick="openModal('espera')">⏸ Espera</button>
+      <button class="btn btn-blue"    onclick="openModal('redirecionar')">↩ Redirecionar</button>
+      <div class="action-bar-spacer"></div>
+      <button class="btn btn-red"     onclick="openModal('concluir')">✅ Concluir</button>
+    </div>
+
   </div>
 
-</div>
-
-<!-- ACTION BAR -->
-<div class="action-bar">
-  <button class="btn btn-green" onclick="openModal('iniciar')">▶ Iniciar</button>
-  <button class="btn btn-orange" onclick="openModal('espera')">⏸ Espera</button>
-  <button class="btn btn-blue" onclick="openModal('redirecionar')">↩ Redirecionar</button>
-  <button class="btn btn-red" onclick="openModal('concluir')">✅ Concluir</button>
 </div>
 
 <!-- MODAL: INICIAR -->
@@ -594,13 +542,10 @@
   <div class="modal" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <div class="modal-title">▶ Iniciar Atendimento</div>
-    <div class="modal-desc">Confirme para registrar o início e atualizar o status para Em Andamento.</div>
-    <div class="modal-confirm-block">
-      O horário de início será registrado automaticamente e o card no Teams será atualizado.
-    </div>
+    <div class="modal-desc">Confirme para marcar este chamado como Em Andamento e liberar o campo de resposta ao cliente.</div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-green" onclick="confirm('iniciar', 'Atendimento iniciado — Em Andamento')">▶ Confirmar Início</button>
-      <button class="modal-btn-ghost modal-btn" onclick="closeModal('iniciar')">Cancelar</button>
+      <button class="modal-btn modal-btn-green" onclick="confirmIniciar()">▶ Confirmar Início</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal('iniciar')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -627,8 +572,8 @@
       <textarea class="modal-textarea" rows="2" placeholder="Detalhes adicionais..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-orange" onclick="confirm('espera', 'Chamado em Espera')">⏸ Confirmar Espera</button>
-      <button class="modal-btn-ghost modal-btn" onclick="closeModal('espera')">Cancelar</button>
+      <button class="modal-btn modal-btn-orange" onclick="confirmAction('espera', 'Chamado em Espera')">⏸ Confirmar Espera</button>
+      <button class="modal-btn modal-btn-ghost"  onclick="closeModal('espera')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -674,8 +619,8 @@
       <textarea class="modal-textarea" rows="2" placeholder="Ex: fora do escopo, ausência..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-blue" onclick="confirm('redirecionar', 'Chamado redirecionado')">↩ Confirmar Redirecionamento</button>
-      <button class="modal-btn-ghost modal-btn" onclick="closeModal('redirecionar')">Cancelar</button>
+      <button class="modal-btn modal-btn-blue" onclick="confirmAction('redirecionar', 'Chamado redirecionado')">↩ Confirmar Redirecionamento</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal('redirecionar')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -694,8 +639,8 @@
       <textarea class="modal-textarea" rows="3" placeholder="Descreva o que foi feito, decisões tomadas, próximos passos..."></textarea>
     </div>
     <div class="modal-actions">
-      <button class="modal-btn modal-btn-red" onclick="confirm('concluir', '✅ Ticket concluído com sucesso')">✅ Confirmar Conclusão</button>
-      <button class="modal-btn-ghost modal-btn" onclick="closeModal('concluir')">Cancelar</button>
+      <button class="modal-btn modal-btn-red"   onclick="confirmAction('concluir', '✅ Ticket concluído com sucesso')">✅ Confirmar Conclusão</button>
+      <button class="modal-btn modal-btn-ghost" onclick="closeModal('concluir')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -704,28 +649,26 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== MICROSOFT GRAPH AUTH + SHAREPOINT =====
-  const CLIENT_ID = '47e44f24-4e8d-44c2-8dad-26f8116406c7';
-  const TENANT_ID = '54ca17b8-f0f1-434f-8cfb-953d363b06e0';
-  const SITE_ID = 'craftms.sharepoint.com,CoreCad-Operaes';
-  const LIST_ID = '9b3f8a2e-3faf-4d57-919b-332c2c605774';
+  // ===== CONFIG =====
+  const CLIENT_ID    = '47e44f24-4e8d-44c2-8dad-26f8116406c7';
+  const TENANT_ID    = '54ca17b8-f0f1-434f-8cfb-953d363b06e0';
+  const LIST_ID      = '9b3f8a2e-3faf-4d57-919b-332c2c605774';
   const REDIRECT_URI = 'https://cauecgr-ship-it.github.io/CoreCad-app/corecad-tela-atendimento.html';
-  const SCOPES = 'https://graph.microsoft.com/Sites.Read.All https://graph.microsoft.com/User.Read';
+  const SCOPES       = 'https://graph.microsoft.com/Sites.Read.All https://graph.microsoft.com/User.Read';
 
-  // Pegar ticketId da URL
   const urlParams = new URLSearchParams(window.location.search);
-  const ticketId = urlParams.get('ticketId');
+  const ticketId  = urlParams.get('ticketId');
 
-  // Pegar token do hash (após redirect do login)
+  // ===== AUTH =====
   function getTokenFromHash() {
-    const hash = window.location.hash.substring(1);
+    const hash   = window.location.hash.substring(1);
     const params = new URLSearchParams(hash);
     return params.get('access_token');
   }
 
-  // Iniciar login Microsoft
   function login() {
-    const authUrl = `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?` +
+    const authUrl =
+      `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?` +
       `client_id=${CLIENT_ID}` +
       `&response_type=token` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
@@ -735,54 +678,103 @@
     window.location.href = authUrl;
   }
 
-  // Buscar dados do ticket no SharePoint via Graph
+  // ===== HELPERS =====
+  function getInitials(name) {
+    if (!name || name === '—') return '?';
+    return name.trim().split(' ').slice(0, 2).map(p => p[0].toUpperCase()).join('');
+  }
+
+  function getStatusBadgeClass(status) {
+    const map = {
+      'Pendente':    'gray',
+      'Atribuído':   'blue',
+      'Em Andamento':'purple',
+      'Em Espera':   'yellow',
+      'Concluído':   'green',
+      'Reaberto':    'orange',
+    };
+    return map[status] || 'gray';
+  }
+
+  function getUrgBadgeClass(urg) {
+    if (!urg) return 'gray';
+    if (urg.includes('Alta'))    return 'orange';
+    if (urg.includes('Crítica')) return 'red';
+    return 'green';
+  }
+
+  function setBadge(el, cls, text) {
+    el.className = `badge ${cls}`;
+    el.innerHTML = `<span class="badge-dot"></span>${text}`;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    return d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // ===== LOAD TICKET =====
   async function loadTicketData(token, resolvedTicketId) {
     try {
-      const itemUrl = `https://graph.microsoft.com/v1.0/sites/craftms.sharepoint.com:/sites/CoreCad-Operaes:/lists/${LIST_ID}/items/${resolvedTicketId}?expand=fields`;
-
-      const res = await fetch(itemUrl, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-
-      if (!res.ok) throw new Error('Erro ao buscar ticket');
+      const url = `https://graph.microsoft.com/v1.0/sites/craftms.sharepoint.com:/sites/CoreCad-Operaes:/lists/${LIST_ID}/items/${resolvedTicketId}?expand=fields`;
+      const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      const f = data.fields;
+      const f    = data.fields;
 
-      // Atualizar título
+      // Título
+      const titulo = f.Title || '—';
       document.title = `CoreCad — Atendimento #${resolvedTicketId}`;
+      document.getElementById('topbar-title').textContent = titulo;
+      document.getElementById('ticket-id-badge').textContent = `#${resolvedTicketId}`;
 
-      // Atualizar header
-      document.querySelector('.header-title').textContent = f.Title || '—';
-      document.querySelector('.ticket-id').textContent = `#${resolvedTicketId}`;
+      // Status
+      const status = f.Status || 'Pendente';
+      setBadge(document.getElementById('badge-status'), getStatusBadgeClass(status), status);
+      setBadge(document.getElementById('badge-status-sidebar'), getStatusBadgeClass(status), status);
 
-      // Status badge
-      const statusEl = document.querySelector('.badge.purple');
-      if (statusEl) statusEl.innerHTML = `<span class="badge-dot"></span>${f.Status || 'Pendente'}`;
-
-      // Urgência badge
-      const urgEl = document.querySelector('.badge.orange');
-      if (urgEl) urgEl.innerHTML = `<span class="badge-dot"></span>${f.Urgência || f.Urg_x00ea_ncia || 'Normal'}`;
-
-      // Data de recebimento
-      const dataEl = document.querySelector('.header-meta span:last-child');
-      if (dataEl && f.DatadeRecebimento) {
-        const d = new Date(f.DatadeRecebimento);
-        dataEl.textContent = d.toLocaleDateString('pt-BR') + ' · ' + d.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-      }
+      // Urgência
+      const urg = f.Urgência || f['Urg_x00ea_ncia'] || '🟢 Normal';
+      setBadge(document.getElementById('badge-urgencia'), getUrgBadgeClass(urg), urg);
 
       // Responsável
-      const respNome = f['Responsável'] || f.Respons_x00e1_vel || '—';
-      document.querySelector('.avatar-name').textContent = respNome;
+      const respNome = f['Responsável'] || f['Respons_x00e1_vel'] || '—';
+      document.getElementById('resp-nome').textContent     = respNome;
+      document.getElementById('avatar-initials').textContent = getInitials(respNome);
 
       // Remetente
-      const remEl = document.getElementById('remetente-value');
-      if (remEl) remEl.textContent = f.Remetente || '—';
+      document.getElementById('remetente-value').textContent = f.Remetente || '—';
 
-      // Corpo (solicitação original)
-      const corpoEl = document.querySelector('.msg.original .msg-text');
-      if (corpoEl && f.Corpo) corpoEl.innerHTML = f.Corpo.replace(/\n/g, '<br>');
+      // Data
+      document.getElementById('data-recebimento').textContent = formatDate(f.DatadeRecebimento || f.Created);
 
-      // Remover loading
+      // SLA (placeholder — sem campo dedicado ainda)
+      document.getElementById('sla-time').textContent = f.DatadeRecebimento
+        ? '72h a partir de ' + formatDate(f.DatadeRecebimento)
+        : '—';
+
+      // Histórico — solicitação original
+      document.getElementById('msg-from-original').textContent = f.Remetente || '—';
+      document.getElementById('msg-time-original').textContent = formatDate(f.DatadeRecebimento || f.Created);
+      const corpo = f.Corpo || f.CorpodaSolicitação || '';
+      document.getElementById('msg-body-original').innerHTML  = corpo.replace(/\n/g, '<br>') || '(sem corpo)';
+
+      // Anexos
+      const linkRaw = f.AnexoLink || '';
+      const area = document.getElementById('anexos-area');
+      if (linkRaw) {
+        const links = linkRaw.split(',').map(s => s.trim()).filter(Boolean);
+        area.innerHTML = links.map(href => {
+          const name = decodeURIComponent(href.split('/').pop());
+          const icon = name.endsWith('.eml') || name.endsWith('.msg') ? '📧' : '📎';
+          return `<a class="anexo-btn" href="${href}" target="_blank">${icon} ${name}</a>`;
+        }).join('');
+      } else {
+        area.innerHTML = '<span style="font-size:12px;color:var(--text3)">Nenhum anexo</span>';
+      }
+
+      // Remove loading
       document.getElementById('loading-overlay')?.remove();
 
     } catch(err) {
@@ -798,9 +790,8 @@
     }
   }
 
-  // Inicialização
+  // ===== INICIALIZAÇÃO =====
   window.addEventListener('load', function() {
-    // Recuperar ticketId — pode vir da URL ou do sessionStorage (após redirect de login)
     const resolvedTicketId = ticketId || sessionStorage.getItem('pending_ticketId');
 
     if (!resolvedTicketId) {
@@ -814,7 +805,6 @@
       return;
     }
 
-    // Garantir que o ticketId está salvo para após o redirect
     sessionStorage.setItem('pending_ticketId', resolvedTicketId);
 
     const token = getTokenFromHash();
@@ -839,6 +829,7 @@
     }
   });
 
+  // ===== AÇÕES =====
   function openModal(name) {
     document.getElementById('modal-' + name).classList.add('open');
   }
@@ -847,13 +838,19 @@
       document.getElementById('modal-' + name).classList.remove('open');
     }
   }
-  function confirm(name, msg) {
-    document.getElementById('modal-' + name).classList.remove('open');
-    const toast = document.getElementById('toast');
-    toast.textContent = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+
+  function confirmIniciar() {
+    closeModal('iniciar');
+    // Libera campo de resposta
+    document.getElementById('reply-area').classList.add('visible');
+    showToast('▶ Atendimento iniciado — Em Andamento');
   }
+
+  function confirmAction(name, msg) {
+    closeModal(name);
+    showToast(msg);
+  }
+
   function selectPerson(el) {
     document.querySelectorAll('.person-option').forEach(p => p.classList.remove('selected'));
     el.classList.add('selected');
@@ -863,40 +860,41 @@
     const text = document.getElementById('replyText').value.trim();
     if (!text) return;
 
-    // Adiciona a resposta no histórico visualmente
-    const historico = document.querySelector('.historico');
-    const now = new Date();
-    const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const now  = new Date();
+    const time = now.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' }) +
+                 ' · ' + now.toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+    const respNome = document.getElementById('resp-nome').textContent || 'Operador';
+
     const msg = document.createElement('div');
     msg.className = 'msg operador';
     msg.innerHTML = `
       <div class="msg-header">
-        <div class="msg-from operador">
-          <span class="msg-tag operador">OPERADOR</span>
-          Isabela Santos
-        </div>
-        <span class="msg-time">22/06 · ${time}</span>
+        <div class="msg-from operador"><span class="msg-tag operador">OPERADOR</span>${respNome}</div>
+        <span class="msg-time">${time}</span>
       </div>
       <div class="msg-text">${text.replace(/\n/g, '<br>')}</div>
     `;
-    historico.appendChild(msg);
+
+    const area = document.getElementById('historico-area');
+    area.appendChild(msg);
     msg.scrollIntoView({ behavior: 'smooth' });
 
-    // Limpa o campo
     document.getElementById('replyText').value = '';
-
-    // Toast de confirmação
-    const toast = document.getElementById('toast');
-    toast.textContent = '✅ Resposta enviada ao cliente';
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3000);
+    showToast('✅ Resposta enviada ao cliente');
   }
 
-  // Enviar com Ctrl+Enter
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // Ctrl+Enter para enviar
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-      const active = document.activeElement;
-      if (active && active.id === 'replyText') sendReply();
+      if (document.activeElement?.id === 'replyText') sendReply();
     }
   });
 </script>
