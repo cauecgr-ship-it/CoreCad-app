@@ -654,28 +654,73 @@
   const TENANT_ID    = '54ca17b8-f0f1-434f-8cfb-953d363b06e0';
   const LIST_ID      = '9b3f8a2e-3faf-4d57-919b-332c2c605774';
   const REDIRECT_URI = 'https://cauecgr-ship-it.github.io/CoreCad-app/corecad-tela-atendimento.html';
-  const SCOPES       = 'https://graph.microsoft.com/Sites.Read.All https://graph.microsoft.com/User.Read';
+  const SCOPES       = 'https://graph.microsoft.com/Files.Read.All https://graph.microsoft.com/User.Read';
 
   const urlParams = new URLSearchParams(window.location.search);
   const ticketId  = urlParams.get('ticketId');
 
-  // ===== AUTH =====
-  function getTokenFromHash() {
-    const hash   = window.location.hash.substring(1);
-    const params = new URLSearchParams(hash);
-    return params.get('access_token');
+  // ===== PKCE HELPERS =====
+  function generateRandom(length) {
+    const arr = new Uint8Array(length);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
   }
 
-  function login() {
+  async function sha256(plain) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain);
+    return crypto.subtle.digest('SHA-256', data);
+  }
+
+  function base64UrlEncode(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let str = '';
+    bytes.forEach(b => str += String.fromCharCode(b));
+    return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  async function login() {
+    const verifier  = generateRandom(32);
+    const challenge = base64UrlEncode(await sha256(verifier));
+    const state     = generateRandom(8);
+
+    sessionStorage.setItem('pkce_verifier', verifier);
+    sessionStorage.setItem('pkce_state',    state);
+    sessionStorage.setItem('pending_ticketId', ticketId || sessionStorage.getItem('pending_ticketId'));
+
     const authUrl =
       `https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/authorize?` +
-      `client_id=${CLIENT_ID}` +
-      `&response_type=token` +
+      `client_id=${encodeURIComponent(CLIENT_ID)}` +
+      `&response_type=code` +
       `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-      `&scope=${encodeURIComponent(SCOPES)}` +
-      `&state=ticketId=${ticketId}` +
-      `&response_mode=fragment`;
+      `&scope=${encodeURIComponent(SCOPES + ' offline_access')}` +
+      `&state=${state}` +
+      `&code_challenge=${challenge}` +
+      `&code_challenge_method=S256` +
+      `&response_mode=query`;
     window.location.href = authUrl;
+  }
+
+  async function exchangeCodeForToken(code) {
+    const verifier = sessionStorage.getItem('pkce_verifier');
+    const body = new URLSearchParams({
+      client_id:     CLIENT_ID,
+      grant_type:    'authorization_code',
+      code:          code,
+      redirect_uri:  REDIRECT_URI,
+      code_verifier: verifier,
+      scope:         SCOPES + ' offline_access',
+    });
+
+    const res = await fetch(`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: body.toString(),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || 'Falha ao obter token');
+    return data.access_token;
   }
 
   // ===== HELPERS =====
@@ -791,8 +836,33 @@
   }
 
   // ===== INICIALIZAÇÃO =====
-  window.addEventListener('load', function() {
+  window.addEventListener('load', async function() {
     const resolvedTicketId = ticketId || sessionStorage.getItem('pending_ticketId');
+
+    // Callback do Azure com ?code=...
+    const code  = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code) {
+      // Limpa URL
+      history.replaceState({}, '', REDIRECT_URI + (resolvedTicketId ? `?ticketId=${resolvedTicketId}` : ''));
+      try {
+        const token = await exchangeCodeForToken(code);
+        sessionStorage.setItem('graph_token', token);
+        const id = sessionStorage.getItem('pending_ticketId');
+        if (id) loadTicketData(token, id);
+      } catch(err) {
+        document.getElementById('loading-overlay').innerHTML = `
+          <div style="text-align:center;padding:40px;color:var(--text2)">
+            <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+            <div style="font-size:14px;font-weight:600;color:var(--text)">Erro ao autenticar</div>
+            <div style="font-size:12px;margin-top:8px">${err.message}</div>
+            <button onclick="login()" style="margin-top:16px;padding:10px 20px;background:var(--accent);color:white;border:none;border-radius:8px;cursor:pointer;font-family:Inter,sans-serif;font-size:13px;font-weight:600">Tentar novamente</button>
+          </div>
+        `;
+      }
+      return;
+    }
 
     if (!resolvedTicketId) {
       document.getElementById('loading-overlay').innerHTML = `
@@ -807,25 +877,18 @@
 
     sessionStorage.setItem('pending_ticketId', resolvedTicketId);
 
-    const token = getTokenFromHash();
-    if (token) {
-      window.location.hash = '';
-      sessionStorage.setItem('graph_token', token);
-      loadTicketData(token, resolvedTicketId);
+    const savedToken = sessionStorage.getItem('graph_token');
+    if (savedToken) {
+      loadTicketData(savedToken, resolvedTicketId);
     } else {
-      const savedToken = sessionStorage.getItem('graph_token');
-      if (savedToken) {
-        loadTicketData(savedToken, resolvedTicketId);
-      } else {
-        document.getElementById('loading-overlay').innerHTML = `
-          <div style="text-align:center;padding:40px">
-            <div style="font-size:40px;margin-bottom:16px">🔐</div>
-            <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso ao CoreCad</div>
-            <div style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5">Entre com sua conta da Craft para<br>visualizar os dados do chamado</div>
-            <button onclick="login()" style="padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-size:14px;font-weight:600">Entrar com conta Craft</button>
-          </div>
-        `;
-      }
+      document.getElementById('loading-overlay').innerHTML = `
+        <div style="text-align:center;padding:40px">
+          <div style="font-size:40px;margin-bottom:16px">🔐</div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">Acesso ao CoreCad</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5">Entre com sua conta da Craft para<br>visualizar os dados do chamado</div>
+          <button onclick="login()" style="padding:12px 28px;background:var(--accent);color:white;border:none;border-radius:10px;cursor:pointer;font-family:Inter,sans-serif;font-size:14px;font-weight:600">Entrar com conta Craft</button>
+        </div>
+      `;
     }
   });
 
