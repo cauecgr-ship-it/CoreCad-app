@@ -928,7 +928,13 @@
     const isDemo = urlParams.get('demo') === 'true';
 
     // MODO DEMO
-    if (isDemo) { setTimeout(loadDemo, 100); return; }
+    if (isDemo) {
+      setTimeout(() => {
+        loadDemo();
+        setTimeout(() => { document.getElementById('loading-overlay')?.remove(); }, 200);
+      }, 150);
+      return;
+    }
 
     // Callback do Azure com ?code=...
     const code  = urlParams.get('code');
