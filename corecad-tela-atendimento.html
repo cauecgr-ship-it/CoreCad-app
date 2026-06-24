@@ -457,10 +457,14 @@
       <div class="section-label">SLA</div>
       <div class="sla-block">
         <div class="sla-top">
-          <span class="sla-label">Prazo</span>
+          <span class="sla-label">Vence em</span>
           <span class="sla-time" id="sla-time">—</span>
         </div>
         <div class="sla-track"><div class="sla-fill" id="sla-fill"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span style="font-size:10px;color:var(--text3)" id="sla-restante">—</span>
+          <span style="font-size:10px;color:var(--text3)" id="sla-total">—</span>
+        </div>
       </div>
     </div>
 
@@ -899,8 +903,8 @@
     // SLA
     document.getElementById('sla-fill').style.width = pct + '%';
     document.getElementById('sla-fill').style.background = fillColor;
-    document.getElementById('sla-deadline').textContent = fmtDT(deadline);
-    document.getElementById('sla-deadline').style.color = vencido ? 'var(--red)' : pct > 80 ? 'var(--orange)' : 'var(--text2)';
+    document.getElementById('sla-time').textContent = fmtDT(deadline);
+    document.getElementById('sla-time').style.color = vencido ? 'var(--red)' : pct > 80 ? 'var(--orange)' : 'var(--text2)';
     document.getElementById('sla-restante').textContent = vencido ? '⚠ Vencido' : restMin < 60 ? restMin + 'min restantes' : Math.floor(restMin/60) + 'h' + (restMin%60 ? ' '+restMin%60+'min' : '') + ' restantes';
     document.getElementById('sla-total').textContent = '2h úteis';
 
@@ -1066,4 +1070,4 @@
   });
 </script>
 </body>
-</html>  
+</html>
