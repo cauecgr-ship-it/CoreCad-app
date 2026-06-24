@@ -836,8 +836,99 @@
   }
 
   // ===== INICIALIZAÇÃO =====
+  // ===== MOCK DEMO =====
+  function loadDemo() {
+    const UTIL_START_MIN = 7 * 60 + 30;
+    const UTIL_END_MIN   = 18 * 60;
+    const UTIL_DIA       = UTIL_END_MIN - UTIL_START_MIN;
+    function isUtilDay(d) { const dow = d.getDay(); return dow >= 1 && dow <= 5; }
+    function minUteisParcialDia(d) {
+      if (!isUtilDay(d)) return 0;
+      const cur = d.getHours() * 60 + d.getMinutes();
+      if (cur <= UTIL_START_MIN) return 0;
+      if (cur >= UTIL_END_MIN) return UTIL_DIA;
+      return cur - UTIL_START_MIN;
+    }
+    function calcUsefulMinutes(from, to) {
+      if (to <= from) return 0;
+      if (from.toDateString() === to.toDateString()) return Math.max(0, minUteisParcialDia(to) - minUteisParcialDia(from));
+      let total = isUtilDay(from) ? Math.max(0, UTIL_DIA - minUteisParcialDia(from)) : 0;
+      const cur = new Date(from); cur.setDate(cur.getDate() + 1); cur.setHours(0,0,0,0);
+      while (cur.toDateString() !== to.toDateString()) { if (isUtilDay(cur)) total += UTIL_DIA; cur.setDate(cur.getDate() + 1); }
+      if (isUtilDay(to)) total += minUteisParcialDia(to);
+      return total;
+    }
+    function calcDeadline(from, slaMin) {
+      let rest = slaMin; let cur = new Date(from);
+      function toAb(d) { let t = new Date(d); const cm = t.getHours()*60+t.getMinutes(); if (!isUtilDay(t)||cm>=UTIL_END_MIN){t.setDate(t.getDate()+1);t.setHours(0,0,0,0);while(!isUtilDay(t))t.setDate(t.getDate()+1);t.setHours(7,30,0,0);return t;} if(cm<UTIL_START_MIN)t.setHours(7,30,0,0); return t; }
+      cur = toAb(cur);
+      while (rest > 0) { const fim = new Date(cur); fim.setHours(18,0,0,0); const disp = Math.round((fim-cur)/60000); if(rest<=disp){cur=new Date(cur.getTime()+rest*60000);rest=0;}else{rest-=disp;cur.setDate(cur.getDate()+1);cur.setHours(0,0,0,0);while(!isUtilDay(cur))cur.setDate(cur.getDate()+1);cur.setHours(7,30,0,0);} }
+      return cur;
+    }
+    function fmtDT(d) { return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' · '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}); }
+
+    const recebido = new Date(Date.now() - 90 * 60 * 1000);
+    const slaMin   = 120; // Alta = 2h
+    const deadline = calcDeadline(recebido, slaMin);
+    const usados   = calcUsefulMinutes(recebido, new Date());
+    const pct      = Math.min(100, Math.round((usados / slaMin) * 100));
+    const restMin  = Math.max(0, slaMin - usados);
+    const vencido  = usados >= slaMin;
+    const fillColor = vencido || pct > 80 ? 'var(--red)' : pct > 50 ? 'var(--orange)' : 'var(--green)';
+
+    document.title = 'CoreCad — Atendimento #685 [DEMO]';
+    document.getElementById('topbar-title').textContent = 'RES: Validação de Cadastro / CNPJ: 46.548.574/0001-08 / Razão Social: COLUMBIA TRADING S.A';
+    document.getElementById('ticket-id-badge').textContent = '#685';
+
+    setBadge(document.getElementById('badge-status'), 'purple', 'Em Andamento');
+    setBadge(document.getElementById('badge-urgencia'), 'orange', '🟠 Alta');
+    setBadge(document.getElementById('badge-status-sidebar'), 'purple', 'Em Andamento');
+
+    document.getElementById('resp-nome').textContent = 'Isabela Santos';
+    document.getElementById('avatar-initials').textContent = 'IS';
+    document.getElementById('remetente-value').textContent = 'ana.fernandes@craftmulti.com';
+    document.getElementById('data-recebimento').textContent = fmtDT(recebido);
+
+    // SLA
+    document.getElementById('sla-fill').style.width = pct + '%';
+    document.getElementById('sla-fill').style.background = fillColor;
+    document.getElementById('sla-deadline').textContent = fmtDT(deadline);
+    document.getElementById('sla-deadline').style.color = vencido ? 'var(--red)' : pct > 80 ? 'var(--orange)' : 'var(--text2)';
+    document.getElementById('sla-restante').textContent = vencido ? '⚠ Vencido' : restMin < 60 ? restMin + 'min restantes' : Math.floor(restMin/60) + 'h' + (restMin%60 ? ' '+restMin%60+'min' : '') + ' restantes';
+    document.getElementById('sla-total').textContent = '2h úteis';
+
+    // Mensagem original
+    document.getElementById('msg-from-original').textContent = 'ana.fernandes@craftmulti.com';
+    document.getElementById('msg-time-original').textContent = fmtDT(recebido);
+    document.getElementById('msg-body-original').innerHTML = 'Olá, bom dia!<br><br>Poderiam validar o cadastro de CNEE que já existe no CROSS para o CW para vinculação de novos embarques e negociações, pls?<br><br>CNPJ: 46.548.574/0001-08<br>Razão Social: COLUMBIA TRADING S.A<br><br>Atenciosamente,<br>Ana Caroline Fernandes<br>Corporate FCL Import Inside Sales · Ramal 6062';
+
+    // Histórico adicional
+    const historico = document.getElementById('historico-area');
+    const msg1 = document.createElement('div'); msg1.className = 'msg operador';
+    msg1.innerHTML = `<div class="msg-header"><div class="msg-from operador"><span class="msg-tag operador">OPERADOR</span>Isabela Santos</div><span class="msg-time">${fmtDT(new Date(recebido.getTime() + 25*60*1000))}</span></div><div class="msg-text">Bom dia, Ana! Recebemos a solicitação. Vamos verificar o cadastro no CargoWise e retornamos até o final do dia.</div>`;
+    const msg2 = document.createElement('div'); msg2.className = 'msg cliente';
+    msg2.innerHTML = `<div class="msg-header"><div class="msg-from cliente"><span class="msg-tag cliente">CLIENTE</span>ana.fernandes@craftmulti.com</div><span class="msg-time">${fmtDT(new Date(recebido.getTime() + 55*60*1000))}</span></div><div class="msg-text">Oi, ainda não recebemos retorno. Conseguem confirmar o prazo? Temos um embarque previsto para amanhã.</div>`;
+    historico.appendChild(msg1);
+    historico.appendChild(msg2);
+
+    // Anexos
+    document.getElementById('anexos-area').innerHTML = '<a class="anexo-btn" href="#">📎 ficha_cadastro.pdf</a><a class="anexo-btn" href="#">📎 registration_form.xlsx</a>';
+
+    // Banner demo
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:56px;left:0;right:0;background:rgba(234,179,8,0.15);border-bottom:1px solid rgba(234,179,8,0.3);padding:6px 20px;font-size:11px;font-weight:600;color:#eab308;text-align:center;z-index:50;letter-spacing:0.05em';
+    banner.textContent = '⚠ MODO DEMONSTRAÇÃO — dados fictícios para apresentação';
+    document.body.appendChild(banner);
+
+    document.getElementById('loading-overlay')?.remove();
+  }
+
   window.addEventListener('load', async function() {
     const resolvedTicketId = ticketId || sessionStorage.getItem('pending_ticketId');
+    const isDemo = urlParams.get('demo') === 'true';
+
+    // MODO DEMO
+    if (isDemo) { loadDemo(); return; }
 
     // Callback do Azure com ?code=...
     const code  = urlParams.get('code');
