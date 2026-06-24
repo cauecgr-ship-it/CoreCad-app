@@ -425,6 +425,13 @@
   </div>
 </div>
 
+<script>
+  // Remove loading imediatamente se for modo demo
+  if (new URLSearchParams(window.location.search).get('demo') === 'true') {
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
+</script>
+
 <!-- LAYOUT PRINCIPAL -->
 <div class="layout">
 
@@ -1059,4 +1066,4 @@
   });
 </script>
 </body>
-</html>
+</html>  
