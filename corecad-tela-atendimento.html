@@ -928,7 +928,7 @@
     const isDemo = urlParams.get('demo') === 'true';
 
     // MODO DEMO
-    if (isDemo) { loadDemo(); return; }
+    if (isDemo) { setTimeout(loadDemo, 100); return; }
 
     // Callback do Azure com ?code=...
     const code  = urlParams.get('code');
