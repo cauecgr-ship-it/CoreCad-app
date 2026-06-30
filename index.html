@@ -536,6 +536,15 @@ function renderAppShell() {
   document.getElementById('hdr-av').textContent = (p.nome || u.name).split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase();
   document.getElementById('hdr-av').style.background = p.role === 'gerencia' ? 'var(--accent-mgr)' : 'var(--accent-op)';
 
+  // Badge de modo demo
+  if (window.Demo && Demo.isActive()) {
+    const hdr = document.getElementById('app-header');
+    const demoBadge = document.createElement('div');
+    demoBadge.style.cssText = 'background:var(--orange);color:#fff;font-size:10px;font-weight:800;padding:3px 9px;border-radius:10px;margin-left:8px;letter-spacing:.5px;';
+    demoBadge.textContent = '🧪 MODO DEMO — dados fictícios';
+    hdr.querySelector('.brand').appendChild(demoBadge);
+  }
+
   // Tab gerência (apenas para gerência)
   if (p.role === 'gerencia') {
     document.getElementById('module-tabs').innerHTML += `

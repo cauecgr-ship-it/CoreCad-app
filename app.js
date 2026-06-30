@@ -124,7 +124,7 @@ const Auth = {
     this.token = null;
     this.user = null;
     this.profile = null;
-    window.location.href = CONFIG.redirectUri;
+    window.location.href = (window.Demo && Demo.isActive()) ? CONFIG.redirectUri + '?demo=true' : CONFIG.redirectUri;
   },
 };
 
@@ -291,6 +291,10 @@ const SP = {
 
   // ── ATUALIZAR TICKET ──────────────────────────────────────
   async updateTicket(spId, fields) {
+    if (Demo.isActive()) {
+      // Modo demo: não há chamada real ao Graph, apenas confirma a operação
+      return Promise.resolve({ demo: true, fields });
+    }
     const siteId = await this.resolveSiteId();
     // UltimaAtv sempre atualiza junto
     const payload = { ...fields, UltimaAtv: new Date().toISOString() };
@@ -391,6 +395,11 @@ const Sync = {
 
   async full() {
     if (State.loading) return;
+    if (Demo.isActive()) {
+      UI.showToast('Modo demonstração — dados fictícios, sincronização real desativada', 'w');
+      UI.renderCurrentView();
+      return;
+    }
     State.loading = true;
     UI.showLoading();
     try {
@@ -413,6 +422,7 @@ const Sync = {
   },
 
   start() {
+    if (Demo.isActive()) return; // sem polling no modo demo
     this.full();
     this.interval = setInterval(() => this.full(), 60000); // sync a cada 60s
   },
@@ -656,8 +666,104 @@ const SLA = {
   },
 };
 
+// ── DEMO MODE ─────────────────────────────────────────────────
+// Ativado via ?demo=true — pula autenticação e SharePoint inteiramente.
+// Usa dados mock locais para permitir testar toda a interface
+// enquanto o consentimento de administrador do Azure AD não é liberado.
+const Demo = {
+  isActive() {
+    return new URLSearchParams(window.location.search).get('demo') === 'true';
+  },
+
+  operadores: [
+    { email: 'walmir.ramos@craftmulti.com', nome: 'Walmir Ramos', sigla: 'WR', cor: '#3b6bff', role: 'operador', capacidade: 5, ativo: true },
+    { email: 'isabela.santos@craftmulti.com', nome: 'Isabela Santos', sigla: 'IS', cor: '#22c55e', role: 'operador', capacidade: 5, ativo: true },
+    { email: 'giovana.costa@craftmulti.com', nome: 'Giovana Costa', sigla: 'GC', cor: '#f59e0b', role: 'operador', capacidade: 5, ativo: true },
+    { email: 'matheus.lopes@craftmulti.com', nome: 'Matheus Lopes', sigla: 'ML', cor: '#a855f7', role: 'operador', capacidade: 5, ativo: true },
+    { email: 'caue.ribeiro@craftmulti.com', nome: 'Cauê Ribeiro', sigla: 'CR', cor: '#7c3aed', role: 'gerencia', capacidade: 10, ativo: true },
+    { email: 'wagner.fornaro@craftmulti.com', nome: 'Wagner Fornaro', sigla: 'WF', cor: '#7c3aed', role: 'gerencia', capacidade: 10, ativo: true },
+  ],
+
+  _now() { return Date.now(); },
+
+  _minsAgo(m) { return new Date(this._now() - m * 60000).toISOString(); },
+
+  buildTickets() {
+    const base = [
+      { id:'TKT-0512', assunto:'Cadastro de novo CNEE — Importadora Aurora', cliente:'Importadora Aurora Ltda', remetente:'compras@aurora.com.br', operador:'walmir.ramos@craftmulti.com', operadorNome:'Walmir Ramos', prioridade:'Crítica', status:'Aberto', pais:'BR', fuso:'GMT-3', categoria:'CNEE', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'12.345.678/0001-90', slaLimite:60, slaDecorrido:54, slaPausado:false, respostaState:'theirs', cwId:'', abertura:this._minsAgo(58), ultimaAtv:this._minsAgo(3),
+        historico:[{de:'cl',nome:'Importadora Aurora',texto:'Olá, segue CNPJ para cadastro urgente, BL bloqueado.',hora:'09:02',tipo:'externo'},{de:'op',nome:'Walmir Ramos',texto:'Recebido, processando agora.',hora:'09:05',tipo:'externo'},{de:'cl',nome:'Importadora Aurora',texto:'Algum retorno? Operação parada no porto.',hora:'09:54',tipo:'externo'}],
+        anexos:['CNPJ_Aurora.pdf'], notas:[], checklist:{}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0513', assunto:'Atualização cadastral — Fornecedor Andina SAS', cliente:'Andina Logística SAS', remetente:'fin@andina.co', operador:'isabela.santos@craftmulti.com', operadorNome:'Isabela Santos', prioridade:'Alta', status:'Aberto', pais:'CO', fuso:'GMT-5', categoria:'Fornecedor', origem:'CraftHub', sistemaDestino:['CargoWise','CraftHub'], docFiscal:'900123456-1', slaLimite:120, slaDecorrido:88, slaPausado:false, respostaState:'mine', cwId:'', abertura:this._minsAgo(95), ultimaAtv:this._minsAgo(12),
+        historico:[{de:'cl',nome:'Andina Logística',texto:'Favor atualizar dados bancários do fornecedor.',hora:'08:10',tipo:'externo'},{de:'op',nome:'Isabela Santos',texto:'Em análise, retorno em breve.',hora:'08:40',tipo:'externo'}],
+        anexos:['NIT_Andina.pdf','Dados_Bancarios.pdf'], notas:['Verificar duplicidade — já existe cadastro similar de 2024.'], checklist:{s1:true}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0514', assunto:'Novo agente — Pacific Cargo Shipping', cliente:'Pacific Cargo Shipping Inc', remetente:'ops@pacificcargo.us', operador:'giovana.costa@craftmulti.com', operadorNome:'Giovana Costa', prioridade:'Normal', status:'Aberto', pais:'US', fuso:'GMT-5', categoria:'Agente', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'EIN 47-2918374', slaLimite:240, slaDecorrido:40, slaPausado:false, respostaState:'new', cwId:'', abertura:this._minsAgo(40), ultimaAtv:this._minsAgo(40),
+        historico:[{de:'cl',nome:'Pacific Cargo',texto:'Requesting new agent registration, documents attached.',hora:'10:20',tipo:'externo'}],
+        anexos:['W9_PacificCargo.pdf'], notas:[], checklist:{}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0515', assunto:'Correção de razão social — Distribuidora Maya', cliente:'Distribuidora Maya SA de CV', remetente:'compras@maya.mx', operador:'matheus.lopes@craftmulti.com', operadorNome:'Matheus Lopes', prioridade:'Normal', status:'Espera', pais:'MX', fuso:'GMT-6', categoria:'CNEE', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'MAY-870415-XY2', slaLimite:240, slaDecorrido:130, slaPausado:false, respostaState:'mine', cwId:'CW-MX-00468', abertura:this._minsAgo(140), ultimaAtv:this._minsAgo(25),
+        historico:[{de:'cl',nome:'Distribuidora Maya',texto:'Razón social cambió, favor actualizar.',hora:'07:30',tipo:'externo'},{de:'op',nome:'Matheus Lopes',texto:'Cadastro atualizado, ID CW-MX-00468.',hora:'08:15',tipo:'externo'},{de:'sys',nome:'Sistema',texto:'Status alterado para Espera',hora:'08:16',tipo:'sistema'}],
+        anexos:[], notas:[], checklist:{s1:true,s2:true,s4:true}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0516', assunto:'Cadastro CNEE bloqueado — pendência fiscal', cliente:'Comercial Atacama Ltda', remetente:'logistica@atacama.cl', operador:'walmir.ramos@craftmulti.com', operadorNome:'Walmir Ramos', prioridade:'Alta', status:'Terceiro', pais:'CL', fuso:'GMT-4', categoria:'CNEE', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'76.543.210-K', slaLimite:120, slaDecorrido:45, slaPausado:true, pausaMotivo:'Governance — validação documental', respostaState:'mine', cwId:'', abertura:this._minsAgo(180), ultimaAtv:this._minsAgo(60),
+        historico:[{de:'cl',nome:'Comercial Atacama',texto:'Enviamos RUT, aguardamos cadastro.',hora:'06:00',tipo:'externo'},{de:'sys',nome:'Sistema',texto:'SLA pausado. Ag. Terceiro: Governance — validação documental',hora:'07:00',tipo:'sistema'}],
+        anexos:['RUT_Atacama.pdf'], notas:['Enviado para Daniela Milan validar duplicidade.'], checklist:{s1:true}, terceiro:'Governance', terceiroContato:'Daniela Milan' },
+
+      { id:'TKT-0517', assunto:'Cadastro de shipper — Korion Trading', cliente:'Korion Trading Co', remetente:'admin@koriontrading.com', operador:'isabela.santos@craftmulti.com', operadorNome:'Isabela Santos', prioridade:'Normal', status:'Concluído', pais:'US', fuso:'GMT-5', categoria:'default', origem:'Manual', sistemaDestino:['CargoWise'], docFiscal:'EIN 88-1234567', slaLimite:240, slaDecorrido:210, slaPausado:false, respostaState:'mine', cwId:'CW-US-00921', abertura:this._minsAgo(400), ultimaAtv:this._minsAgo(190),
+        historico:[{de:'cl',nome:'Korion Trading',texto:'New shipper setup needed.',hora:'Ontem',tipo:'externo'},{de:'op',nome:'Isabela Santos',texto:'Cadastro concluído, ID CW-US-00921.',hora:'Ontem',tipo:'externo'}],
+        anexos:[], notas:[], checklist:{d1:true,d2:true,s1:true,s2:true,s3:true,a1:true}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0518', assunto:'Agente regional — Andean Freight Partners', cliente:'Andean Freight Partners', remetente:'ops@andeanfreight.com', operador:'giovana.costa@craftmulti.com', operadorNome:'Giovana Costa', prioridade:'Alta', status:'Aberto', pais:'AR', fuso:'GMT-3', categoria:'Agente', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'30-71234567-9', slaLimite:120, slaDecorrido:95, slaPausado:false, respostaState:'theirs', cwId:'', abertura:this._minsAgo(100), ultimaAtv:this._minsAgo(5),
+        historico:[{de:'cl',nome:'Andean Freight',texto:'CUIT enviado, aguardamos ativação.',hora:'09:00',tipo:'externo'},{de:'cl',nome:'Andean Freight',texto:'Alguma atualização? Precisamos para embarque de amanhã.',hora:'10:35',tipo:'externo'}],
+        anexos:['CUIT_Andean.pdf'], notas:[], checklist:{s1:true,s2:true}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0519', assunto:'Cadastro de fornecedor — São Paulo Embalagens', cliente:'São Paulo Embalagens Industriais', remetente:'compras@spembalagens.com.br', operador:'matheus.lopes@craftmulti.com', operadorNome:'Matheus Lopes', prioridade:'Normal', status:'Aberto', pais:'BR', fuso:'GMT-3', categoria:'Fornecedor', origem:'E-mail', sistemaDestino:['CargoWise'], docFiscal:'45.678.901/0001-23', slaLimite:240, slaDecorrido:30, slaPausado:false, respostaState:'new', cwId:'', abertura:this._minsAgo(30), ultimaAtv:this._minsAgo(30),
+        historico:[{de:'cl',nome:'SP Embalagens',texto:'Segue documentação para cadastro de fornecedor.',hora:'10:50',tipo:'externo'}],
+        anexos:['CNPJ_SPEmbalagens.pdf','DadosBancarios.pdf'], notas:[], checklist:{}, terceiro:'', terceiroContato:'' },
+
+      { id:'TKT-0520', assunto:'Duplicidade detectada — CNEE Frontera Norte', cliente:'Frontera Norte Import Export', remetente:'admin@fronteranorte.mx', operador:'walmir.ramos@craftmulti.com', operadorNome:'Walmir Ramos', prioridade:'Crítica', status:'Aberto', pais:'MX', fuso:'GMT-6', categoria:'CNEE', origem:'CraftHub', sistemaDestino:['CargoWise'], docFiscal:'FNI-920310-AB1', slaLimite:60, slaDecorrido:61, slaPausado:false, respostaState:'mine', cwId:'', abertura:this._minsAgo(65), ultimaAtv:this._minsAgo(8),
+        historico:[{de:'cl',nome:'Frontera Norte',texto:'Cadastro urgente, BL retido no porto de Manzanillo.',hora:'09:10',tipo:'externo'},{de:'op',nome:'Walmir Ramos',texto:'Identificada duplicidade no sistema, validando qual registro é o correto.',hora:'09:40',tipo:'externo'}],
+        anexos:['RFC_Frontera.pdf'], notas:['Possível duplicata: cadastro CW-MX-00201 de 2023 com mesmo RFC.'], checklist:{}, terceiro:'', terceiroContato:'' },
+    ];
+
+    return base.map((t, i) => ({
+      ...t,
+      _spId: 'demo-' + i,
+      stale: !t.slaPausado && t.status !== 'Concluído' && (Date.now() - new Date(t.ultimaAtv).getTime()) / 60000 > t.slaLimite * 0.2,
+    }));
+  },
+
+  async boot() {
+    // Perfil fake — Cauê como gerência por padrão no modo demo
+    const params = new URLSearchParams(window.location.search);
+    const roleParam = params.get('role'); // ?demo=true&role=operador para testar como operador
+
+    Auth.user = { name: roleParam === 'operador' ? 'Walmir Ramos' : 'Cauê Ribeiro', email: roleParam === 'operador' ? 'walmir.ramos@craftmulti.com' : 'caue.ribeiro@craftmulti.com', id: 'demo-user' };
+    State.profile = {
+      role: roleParam === 'operador' ? 'operador' : 'gerencia',
+      nome: Auth.user.name,
+      email: Auth.user.email,
+      ativo: true,
+    };
+    Auth.profile = State.profile;
+    State.currentModule = State.profile.role;
+    State.tickets = this.buildTickets();
+    State.operadores = this.operadores;
+    State.lastSync = new Date();
+
+    renderAppShell();
+    UI.showToast('Modo demonstração ativo — dados fictícios, sem conexão real com SharePoint', 'w');
+  },
+};
+
 // ── BOOT ──────────────────────────────────────────────────────
 async function boot() {
+  if (Demo.isActive()) {
+    await Demo.boot();
+    return;
+  }
+
   const authed = await Auth.init();
   if (!authed) {
     renderLogin();
@@ -697,4 +803,5 @@ window.Actions = Actions;
 window.Sync = Sync;
 window.UI = UI;
 window.SLA = SLA;
+window.Demo = Demo;
 window.boot = boot;
