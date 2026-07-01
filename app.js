@@ -8,7 +8,7 @@
 // ── CONFIGURAÇÃO ─────────────────────────────────────────────
 const CONFIG = {
   // TROQUE PELO CLIENT ID PÚBLICO DA MICROSOFT PARA BYPASS DE ADMIN CONSENT:
-  clientId: 'd3590ed6-52b3-4102-aeff-aad2292ab01c',
+  clientId: '47e44f24-4e8d-44c2-8dad-26f8116406c7',
   tenantId: '54ca17b8-f0f1-434f-8cfb-953d363b06e0',
   redirectUri: 'https://cauecgr-ship-it.github.io/CoreCad-app/',
   scopes: ['User.Read', 'Sites.Read.All', 'Sites.ReadWrite.All'],
